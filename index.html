@@ -126,15 +126,16 @@
 
             name = $("#train-name").val().trim();
             destination = $("#destination").val().trim();
-            frequency = $("#frequency").val().trim();
             firstTrain = $("#first-train").val().trim();
+            frequency = $("#frequency").val().trim();
             
 
             //test & debug
             // console.log(name);
             // console.log(destination);
-            console.log("First train: " + firstTrain);
             // console.log(frequency);
+            console.log("First train: " + firstTrain);
+           
 
             firebase.database().ref().push({
                 name: name,
@@ -155,16 +156,31 @@
             // console.log(snapshot.val().destination);
             // console.log(snapshot.val().firstTrain);
             // console.log(snapshot.val().frequency);
+            
+            var firstTimeConverted = moment(snapshot.val().firstTrain, "HH:mm").subtract(1, "years");
+            //console.log(firstTimeConverted); - otherwise it'll come out to be a negative
 
-            var nextTrain = moment(snapshot.val().firstTrain, 'H HH:m mm');
-            //var minsAway = moment().diff(moment(convertedDate, "MM/DD/YYYY"), "months");
+            var currentTime = moment();
+            console.log("CURRENT TIME: " + moment(currentTime).format("hh:mm"));
+
+            var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
+            console.log("DIFFERENCE IN TIME: " + diffTime);
+            
+            var tRemainder = diffTime % snapshot.val().frequency;
+            console.log(tRemainder);
+
+            var tMinutesTillTrain = snapshot.val().frequency - tRemainder;
+            console.log(tMinutesTillTrain);
+
+            var nextTrain = moment().add(tMinutesTillTrain, "minutes").format("hh:mm a");
+            console.log("ARRIVAL TIME: " + moment(nextTrain).format("hh:mm"));
 
             var row = $("<tr>");
             var nameColumn = $("<td>").text(snapshot.val().name);
             var destinationColumn = $("<td>").text(snapshot.val().destination);
             var frequencyColumn = $("<td>").text(snapshot.val().frequency);
             var nextColumn = $("<td>").text(nextTrain);
-            //var minsAwayColumn = $("<td>").text(monthsTotal);
+            var minsAwayColumn = $("<td>").text(tMinutesTillTrain);
             
 
 
@@ -172,7 +188,7 @@
             row.append(destinationColumn);
             row.append(frequencyColumn);
             row.append(nextColumn);
-            // row.append(monthsWorked);
+            row.append(minsAwayColumn);
            
 
             $("tbody").append(row);
@@ -188,3 +204,16 @@
 </body>
 
 </html>
+
+
+<!--
+the first train of the day comes in at 3AM
+    the train runs every 17 minutes
+
+current time is 7:12pm 
+
+there have been no delays and will be no delays
+
+question?
+    how many minutes away is the next train?
+-->
